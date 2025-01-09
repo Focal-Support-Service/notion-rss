@@ -213,13 +213,12 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
             },
             notionapi.PropertyFilter{
                 Property: "Link",
-                URL: &notionapi.URLFilterCondition{
+                Text: &notionapi.TextFilterCondition{
                     Equals: item.link.String(),
                 },
             },
         }),
     }
-
     resp, err := dao.client.Database.Query(context.Background(), dao.contentDatabaseId, queryRequest)
     if err != nil {
         return fmt.Errorf("failed to query database for duplicates: %v", err)
@@ -227,7 +226,6 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
     if len(resp.Results) > 0 {
         return fmt.Errorf("duplicate item found with title: %s and link: %s", item.title, item.link.String())
     }
-
     // Process the categories input string
     item.categories = ProcessCategories(strings.Join(item.categories, ","))
 
