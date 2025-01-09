@@ -202,31 +202,6 @@ func ProcessCategories(input string) []string {
 
 // AddRssItem to Notion database as a single new page with Block content. On failure, no retry is attempted.
 func (dao NotionDao) AddRssItem(item RssItem) error {
-    // Check for duplicate entries based on title and link
-    queryRequest := &notionapi.DatabaseQueryRequest{
-        Filter: notionapi.AndCompoundFilter([]notionapi.Filter{
-            notionapi.PropertyFilter{
-                Property: "Title",
-                Text: &notionapi.TextFilterCondition{
-                    Equals: item.title,
-                },
-            },
-            notionapi.PropertyFilter{
-                Property: "Link",
-                Text: &notionapi.TextFilterCondition{
-                    Equals: item.link.String(),
-                },
-            },
-        }),
-    }
-    resp, err := dao.client.Database.Query(context.Background(), dao.contentDatabaseId, queryRequest)
-    if err != nil {
-        return fmt.Errorf("failed to query database for duplicates: %v", err)
-    }
-    if len(resp.Results) > 0 {
-        return fmt.Errorf("duplicate item found with title: %s and link: %s", item.title, item.link.String())
-    }
-    
     // Process the categories input string
     item.categories = ProcessCategories(strings.Join(item.categories, ","))
 
@@ -259,7 +234,7 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
         }
     }
 
-    _, err = dao.client.Page.Create(context.Background(), &notionapi.PageCreateRequest{
+    _, err := dao.client.Page.Create(context.Background(), &notionapi.PageCreateRequest{
         Parent: notionapi.Parent{
             Type:       "database_id",
             DatabaseID: dao.contentDatabaseId,
