@@ -222,6 +222,18 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
         }
     }
 
+    descriptionChunks := chunkString(*item.description, 2000)
+    richTextChunks := make([]notionapi.RichText, len(descriptionChunks))
+    for i, chunk := range descriptionChunks {
+        richTextChunks[i] = notionapi.RichText{
+            Type: notionapi.ObjectTypeText,
+            Text: notionapi.Text{
+                Content: chunk,
+            },
+            PlainText: chunk,
+        }
+    }
+
     _, err := dao.client.Page.Create(context.Background(), &notionapi.PageCreateRequest{
         Parent: notionapi.Parent{
             Type:       "database_id",
@@ -238,15 +250,8 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
                 }},
             },
             "Description": notionapi.RichTextProperty{
-                Type: "rich_text",
-                RichText: []notionapi.RichText{{
-                    Type: notionapi.ObjectTypeText,
-                    Text: notionapi.Text{
-                        Content: *item.description,
-                    },
-                    PlainText: *item.description,
-                },
-                },
+                Type:     "rich_text",
+                RichText: richTextChunks,
             },
             "Link": notionapi.URLProperty{
                 Type: "url",
@@ -262,6 +267,18 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
         Cover:    imageProp,
     })
     return err
+}
+
+func chunkString(s string, chunkSize int) []string {
+    var chunks []string
+    for i := 0; i < len(s); i += chunkSize {
+        end := i + chunkSize
+        if end > len(s) {
+            end = len(s)
+        }
+        chunks = append(chunks, s[i:end])
+    }
+    return chunks
 }
 
 func RssContentToBlocks(item RssItem) []notionapi.Block {
