@@ -213,7 +213,7 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
             },
             notionapi.PropertyFilter{
                 Property: "Link",
-                URL: &notionapi.TextFilterCondition{
+                Text: &notionapi.TextFilterCondition{
                     Equals: item.link.String(),
                 },
             },
@@ -226,6 +226,7 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
     if len(resp.Results) > 0 {
         return fmt.Errorf("duplicate item found with title: %s and link: %s", item.title, item.link.String())
     }
+    
     // Process the categories input string
     item.categories = ProcessCategories(strings.Join(item.categories, ","))
 
