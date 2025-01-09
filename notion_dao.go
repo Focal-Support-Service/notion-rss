@@ -213,7 +213,7 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
             },
             notionapi.PropertyFilter{
                 Property: "Link",
-                Text: &notionapi.TextFilterCondition{
+                URL: &notionapi.TextFilterCondition{
                     Equals: item.link.String(),
                 },
             },
