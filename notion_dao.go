@@ -203,7 +203,7 @@ func ProcessCategories(input string) []string {
 // AddRssItem to Notion database as a single new page with Block content. On failure, no retry is attempted.
 func (dao NotionDao) AddRssItem(item RssItem) error {
     // Process the categories input string
-    item.categories = ProcessCategories(item.categories)
+    item.categories = ProcessCategories(strings.Join(item.categories, ","))
 
     categories := make([]notionapi.Option, len(item.categories))
     for i, c := range item.categories {
@@ -212,13 +212,6 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
         }
     }
     var imageProp *notionapi.Image
-    // TODO: Currently notionapi.URLProperty is not nullable, which is needed
-    //   to use thumbnail properly (i.e. handle the case when no image in RSS item).
-    //thumbnailProp := &notionapi.URLProperty{
-    //	Type: "url",
-    //	URL: ,
-    //}
-
     image := GetImageUrl(strings.Join(item.content, " "))
     if image != nil {
         imageProp = &notionapi.Image{
